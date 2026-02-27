@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desparenzo Inc</title>
+    <style>
+        :root {
+            --bg-page: #f7f7f7;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #222222;
+            --text-tab: #555555;
+            --border: #eeeeee;
+            --shadow: rgba(0,0,0,0.05);
+            --tab-hover: #fcfcfc;
+            --accent: #222222;
+            --toggle-bg: #e0e0e0;
+            --toggle-circle: #ffce45; 
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #121212;
+            --bg-header: #1e1e1e;
+            --bg-card: #1e1e1e;
+            --text-main: #ffffff;
+            --text-tab: #bbbbbb;
+            --border: #333333;
+            --shadow: rgba(0,0,0,0.3);
+            --tab-hover: #2a2a2a;
+            --accent: #ffffff;
+            --toggle-bg: #333333;
+            --toggle-circle: #f0f0f0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-page);
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: var(--text-main);
+            transition: background-color 0.4s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--bg-header);
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        header {
+            padding: 20px 0 10px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-family: "Arial Black", Gadget, sans-serif;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .toggle-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        #theme-toggle {
+            width: 50px;
+            height: 26px;
+            background-color: var(--toggle-bg);
+            border-radius: 50px;
+            position: relative;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .toggle-circle {
+            width: 20px;
+            height: 20px;
+            background-color: var(--toggle-circle);
+            border-radius: 50%;
+            position: absolute;
+            left: 3px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        [data-theme="dark"] .toggle-circle { left: 27px; }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .tab {
+            display: block;
+            padding: 12px 30px;
+            color: var(--text-tab);
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            border-bottom: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: var(--text-main);
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 15px 50px 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:active { transform: scale(0.95); }
+
+        .card h3 {
+            margin: 10px 0;
+            font-family: "Arial Black", sans-serif;
+            font-size: 1rem;
+            word-wrap: break-word;
+        }
+
+        .btn {
+            display: block;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: var(--text-main);
+            color: var(--bg-header);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.4rem; text-align: left; padding-left: 15px; }
+            .grid { grid-template-columns: repeat(2, 1fr); }
+            .tab { flex: 1; text-align: center; padding: 12px 5px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-wrapper">
+        <header>
+            <div class="toggle-container">
+                <button id="theme-toggle" onclick="toggleTheme()">
+                    <div class="toggle-circle" id="toggle-icon">☀️</div>
+                </button>
+            </div>
+            <h1>Desparenzo Inc</h1>
+        </header>
+
+        <nav>
+            <div class="tab active" onclick="showSection('games', this)">Games</div>
+            <div class="tab" onclick="showSection('apps', this)">Apps</div>
+        </nav>
+    </div>
+
+    <div class="container">
+        
+        <div id="games-section" class="grid">
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_1" class="btn">Play 1</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_2" class="btn">Play 2</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_3" class="btn">Play 3</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_4" class="btn">Play 4</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_5" class="btn">Play 5</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_6" class="btn">Play 6</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_7" class="btn">Play 7</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_8" class="btn">Play 8</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_9" class="btn">Play 9</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_10" class="btn">Play 10</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_11" class="btn">Play 11</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_12" class="btn">Play 12</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_13" class="btn">Play 13</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_14" class="btn">Play 14</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_15" class="btn">Play 15</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_16" class="btn">Play 16</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_17" class="btn">Play 17</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_18" class="btn">Play 18</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_19" class="btn">Play 19</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_20" class="btn">Play 20</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_21" class="btn">Play 21</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_22" class="btn">Play 22</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_23" class="btn">Play 23</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_24" class="btn">Play 24</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_25" class="btn">Play 25</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_26" class="btn">Play 26</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_27" class="btn">Play 27</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_28" class="btn">Play 28</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_29" class="btn">Play 29</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_30" class="btn">Play 30</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_31" class="btn">Play 31</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_32" class="btn">Play 32</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_33" class="btn">Play 33</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_34" class="btn">Play 34</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_35" class="btn">Play 35</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_36" class="btn">Play 36</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_37" class="btn">Play 37</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_38" class="btn">Play 38</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_39" class="btn">Play 39</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_40" class="btn">Play 40</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_41" class="btn">Play 41</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_42" class="btn">Play 42</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_43" class="btn">Play 43</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_44" class="btn">Play 44</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_45" class="btn">Play 45</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_46" class="btn">Play 46</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_47" class="btn">Play 47</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_48" class="btn">Play 48</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_49" class="btn">Play 49</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_50" class="btn">Play 50</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_51" class="btn">Play 51</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_52" class="btn">Play 52</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_53" class="btn">Play 53</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_54" class="btn">Play 54</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_55" class="btn">Play 55</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_56" class="btn">Play 56</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_57" class="btn">Play 57</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_58" class="btn">Play 58</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_59" class="btn">Play 59</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_60" class="btn">Play 60</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_61" class="btn">Play 61</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_62" class="btn">Play 62</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_63" class="btn">Play 63</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_64" class="btn">Play 64</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_65" class="btn">Play 65</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_66" class="btn">Play 66</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_67" class="btn">Play 67</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_68" class="btn">Play 68</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_69" class="btn">Play 69</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_70" class="btn">Play 70</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_71" class="btn">Play 71</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_72" class="btn">Play 72</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_73" class="btn">Play 73</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_74" class="btn">Play 74</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_75" class="btn">Play 75</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_76" class="btn">Play 76</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_77" class="btn">Play 77</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_78" class="btn">Play 78</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_79" class="btn">Play 79</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_80" class="btn">Play 80</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_81" class="btn">Play 81</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_82" class="btn">Play 82</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_83" class="btn">Play 83</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_84" class="btn">Play 84</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_85" class="btn">Play 85</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_86" class="btn">Play 86</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_87" class="btn">Play 87</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_88" class="btn">Play 88</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_89" class="btn">Play 89</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_90" class="btn">Play 90</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_91" class="btn">Play 91</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_92" class="btn">Play 92</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_93" class="btn">Play 93</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_94" class="btn">Play 94</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_95" class="btn">Play 95</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_96" class="btn">Play 96</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_97" class="btn">Play 97</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_98" class="btn">Play 98</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_99" class="btn">Play 99</a></div>
+            <div class="card"><h3>Game Coming Soon</h3><a href="paste_your_code_here_for_button_number_100" class="btn">Play 100</a></div>
+        </div>
+
+        <div id="apps-section" class="grid hidden">
+            <div class="card"><h3>PeerChat</h3><a href="paste_your_code_here_for_button_number_1" class="btn">Open 1</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_2" class="btn">Open 2</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_3" class="btn">Open 3</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_4" class="btn">Open 4</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_5" class="btn">Open 5</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_6" class="btn">Open 6</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_7" class="btn">Open 7</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_8" class="btn">Open 8</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_9" class="btn">Open 9</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_10" class="btn">Open 10</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_11" class="btn">Open 11</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_12" class="btn">Open 12</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_13" class="btn">Open 13</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_14" class="btn">Open 14</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_15" class="btn">Open 15</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_16" class="btn">Open 16</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_17" class="btn">Open 17</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_18" class="btn">Open 18</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_19" class="btn">Open 19</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_20" class="btn">Open 20</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_21" class="btn">Open 21</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_22" class="btn">Open 22</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_23" class="btn">Open 23</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_24" class="btn">Open 24</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_25" class="btn">Open 25</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_26" class="btn">Open 26</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_27" class="btn">Open 27</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_28" class="btn">Open 28</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_29" class="btn">Open 29</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_30" class="btn">Open 30</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_31" class="btn">Open 31</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_32" class="btn">Open 32</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_33" class="btn">Open 33</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_34" class="btn">Open 34</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_35" class="btn">Open 35</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_36" class="btn">Open 36</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_37" class="btn">Open 37</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_38" class="btn">Open 38</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_39" class="btn">Open 39</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_40" class="btn">Open 40</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_41" class="btn">Open 41</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_42" class="btn">Open 42</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_43" class="btn">Open 43</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_44" class="btn">Open 44</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_45" class="btn">Open 45</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_46" class="btn">Open 46</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_47" class="btn">Open 47</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_48" class="btn">Open 48</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_49" class="btn">Open 49</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_50" class="btn">Open 50</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_51" class="btn">Open 51</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_52" class="btn">Open 52</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_53" class="btn">Open 53</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_54" class="btn">Open 54</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_55" class="btn">Open 55</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_56" class="btn">Open 56</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_57" class="btn">Open 57</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_58" class="btn">Open 58</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_59" class="btn">Open 59</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_60" class="btn">Open 60</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_61" class="btn">Open 61</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_62" class="btn">Open 62</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_63" class="btn">Open 63</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_64" class="btn">Open 64</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_65" class="btn">Open 65</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_66" class="btn">Open 66</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_67" class="btn">Open 67</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_68" class="btn">Open 68</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_69" class="btn">Open 69</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_70" class="btn">Open 70</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_71" class="btn">Open 71</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_72" class="btn">Open 72</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_73" class="btn">Open 73</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_74" class="btn">Open 74</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_75" class="btn">Open 75</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_76" class="btn">Open 76</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_77" class="btn">Open 77</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_78" class="btn">Open 78</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_79" class="btn">Open 79</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_80" class="btn">Open 80</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_81" class="btn">Open 81</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_82" class="btn">Open 82</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_83" class="btn">Open 83</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_84" class="btn">Open 84</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_85" class="btn">Open 85</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_86" class="btn">Open 86</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_87" class="btn">Open 87</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_88" class="btn">Open 88</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_89" class="btn">Open 89</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_90" class="btn">Open 90</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_91" class="btn">Open 91</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_92" class="btn">Open 92</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_93" class="btn">Open 93</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_94" class="btn">Open 94</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_95" class="btn">Open 95</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_96" class="btn">Open 96</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_97" class="btn">Open 97</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_98" class="btn">Open 98</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_99" class="btn">Open 99</a></div>
+            <div class="card"><h3>App Coming Soon</h3><a href="paste_your_code_here_for_button_number_100" class="btn">Open 100</a></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('toggle-icon');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.textContent = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.textContent = '🌙';
+            }
+        }
+
+        function showSection(sectionId, element) {
+            window.scrollTo(0, 0); 
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('games-section').classList.add('hidden');
+            document.getElementById('apps-section').classList.add('hidden');
+            document.getElementById(sectionId + '-section').classList.remove('hidden');
+        }
+    </script>
+
+</body>
+</html>
