@@ -284,10 +284,41 @@
     }
     .section-rule { height: 1px; flex: 1; background: var(--line); margin-left: 4px; }
 
+    .search-results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -7px 5px 22px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--surface);
+      box-shadow: 0 5px 18px rgba(35,39,75,.035);
+    }
+    .search-results-bar[hidden] { display: none; }
+    .search-results-title {
+      min-width: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 780;
+      overflow-wrap: anywhere;
+    }
+    .search-results-count {
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
     .app-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
       gap: 15px 12px;
+    }
+    .app-tile-wrap {
+      position: relative;
+      min-width: 0;
     }
     .app-tile {
       min-width: 0;
@@ -344,6 +375,36 @@
       display: block;
       object-fit: cover;
       border-radius: inherit;
+    }
+    .pin-toggle {
+      position: absolute;
+      z-index: 3;
+      top: 5px;
+      right: 5px;
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--muted);
+      background: var(--surface-strong);
+      box-shadow: 0 3px 9px rgba(20,24,50,.13);
+      font-size: 17px;
+      line-height: 1;
+      cursor: pointer;
+      transition: color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .pin-toggle:hover { transform: scale(1.08); }
+    .pin-toggle[aria-pressed="true"] {
+      color: #fff;
+      border-color: transparent;
+      background: var(--accent);
+    }
+    .pin-toggle:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
     }
     .app-name {
       width: 100%;
@@ -454,6 +515,20 @@
       <div class="library-count" id="library-count">Loading library…</div>
     </section>
 
+    <div class="search-results-bar" id="search-results-bar" hidden aria-live="polite">
+      <span class="search-results-title" id="search-results-title">Search results</span>
+      <span class="search-results-count" id="search-results-count"></span>
+    </div>
+
+    <section class="library-section pinned-section" id="pinned-section" hidden aria-label="Pinned apps">
+      <div class="section-heading">
+        <h2>Pinned</h2>
+        <span class="section-count" id="pinned-count">0</span>
+        <span class="section-rule"></span>
+      </div>
+      <div class="app-grid" id="pinned-grid"></div>
+    </section>
+
     <div id="library-content" aria-live="polite">
       <div class="status"><strong>Loading your library</strong>Fetching the catalogue…</div>
     </div>
@@ -474,8 +549,18 @@
       const searchRow = document.getElementById('search-row');
       const searchInput = document.getElementById('search-input');
       const emptySearch = document.getElementById('empty-search');
+      const searchResultsBar = document.getElementById('search-results-bar');
+      const searchResultsTitle = document.getElementById('search-results-title');
+      const searchResultsCount = document.getElementById('search-results-count');
+      const pinnedSection = document.getElementById('pinned-section');
+      const pinnedGrid = document.getElementById('pinned-grid');
+      const pinnedCount = document.getElementById('pinned-count');
       const themeToggle = document.getElementById('theme-toggle');
       const themeIcon = document.getElementById('theme-icon');
+      const PIN_STORAGE_KEY = 'desparenzo-pinned-apps-v1';
+      let libraryCategories = [];
+      let activeSearch = '';
+      let pinnedUrls = loadPinnedUrls();
 
       const categoryGlyphs = {
         games: '🎮', game: '🎮', apps: '▦', app: '▦', utilities: '🛠', utility: '🛠', tools: '🧰', tools: '🧰'
@@ -485,6 +570,20 @@
         ['#ef9a45', '#e45e73'], ['#567ee8', '#855ddd'], ['#26a7c7', '#4f75dd'],
         ['#c26bd7', '#8063e8'], ['#43ad79', '#2994ac'], ['#e18c42', '#da5d9c']
       ];
+
+      function loadPinnedUrls() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(PIN_STORAGE_KEY) || '[]');
+          return new Set(Array.isArray(saved) ? saved.filter(value => typeof value === 'string') : []);
+        } catch (_) {
+          return new Set();
+        }
+      }
+
+      function savePinnedUrls() {
+        try { localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify([...pinnedUrls])); }
+        catch (_) { /* Pins still work for this page session if browser storage is unavailable. */ }
+      }
 
       function hashText(value) {
         let hash = 0;
@@ -538,7 +637,27 @@
         return categories.filter(category => category.items.length > 0);
       }
 
-      function makeTile(item, category, index) {
+      function updatePinButton(button, isPinned) {
+        button.textContent = isPinned ? '★' : '☆';
+        button.setAttribute('aria-pressed', String(isPinned));
+        button.setAttribute('aria-label', isPinned ? 'Unpin this app' : 'Pin this app');
+        button.title = isPinned ? 'Unpin' : 'Pin';
+      }
+
+      function togglePin(item) {
+        if (pinnedUrls.has(item.url)) pinnedUrls.delete(item.url);
+        else pinnedUrls.add(item.url);
+        savePinnedUrls();
+        renderPinned();
+        content.querySelectorAll('.pin-toggle').forEach(button => {
+          if (button.dataset.url === item.url) updatePinButton(button, pinnedUrls.has(item.url));
+        });
+      }
+
+      function makeTile(item, category) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'app-tile-wrap';
+
         const link = document.createElement('a');
         link.className = 'app-tile';
         link.href = item.url;
@@ -572,10 +691,40 @@
         label.className = 'app-name';
         label.textContent = item.name;
         link.append(icon, label);
-        return link;
+
+        const pinButton = document.createElement('button');
+        pinButton.type = 'button';
+        pinButton.className = 'pin-toggle';
+        pinButton.dataset.url = item.url;
+        updatePinButton(pinButton, pinnedUrls.has(item.url));
+        pinButton.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          togglePin(item);
+        });
+
+        wrapper.append(link, pinButton);
+        return wrapper;
+      }
+
+      function renderPinned() {
+        const allItems = new Map();
+        libraryCategories.forEach(category => {
+          category.items.forEach(item => allItems.set(item.url, { item, category }));
+        });
+
+        const pinnedItems = [...pinnedUrls]
+          .map(url => allItems.get(url))
+          .filter(Boolean);
+
+        pinnedGrid.replaceChildren();
+        pinnedItems.forEach(({ item, category }) => pinnedGrid.appendChild(makeTile(item, category)));
+        pinnedCount.textContent = String(pinnedItems.length);
+        pinnedSection.hidden = activeSearch.length > 0 || pinnedItems.length === 0;
       }
 
       function render(categories) {
+        libraryCategories = categories;
         content.replaceChildren();
         nav.replaceChildren();
         let total = 0;
@@ -601,7 +750,7 @@
 
           const grid = document.createElement('div');
           grid.className = 'app-grid';
-          category.items.forEach((item, index) => grid.appendChild(makeTile(item, category, index)));
+          category.items.forEach(item => grid.appendChild(makeTile(item, category)));
           section.append(heading, grid);
           content.appendChild(section);
 
@@ -616,32 +765,46 @@
           nav.appendChild(chip);
         });
 
-        countLabel.textContent = total + (total === 1 ? ' item' : ' items');
+        countLabel.dataset.original = total + (total === 1 ? ' item' : ' items');
+        countLabel.textContent = countLabel.dataset.original;
         if (!total) {
           content.innerHTML = '<div class="status"><strong>Your library is empty</strong>Add your first item to <code>library.txt</code> and refresh this page.</div>';
         }
-        filterItems('');
+        renderPinned();
+        filterItems(searchInput.value);
       }
 
       function filterItems(query) {
         const normalized = query.trim().toLowerCase();
+        activeSearch = normalized;
         let visibleTotal = 0;
         content.querySelectorAll('.library-section').forEach(section => {
           let sectionCount = 0;
-          section.querySelectorAll('.app-tile').forEach(tile => {
-            const matches = tile.querySelector('.app-name').textContent.toLowerCase().includes(normalized);
+          section.querySelectorAll('.app-tile-wrap').forEach(tile => {
+            const name = tile.querySelector('.app-name').textContent.toLowerCase();
+            const matches = name.includes(normalized);
             tile.hidden = !matches;
             if (matches) sectionCount++;
           });
           section.hidden = sectionCount === 0;
           visibleTotal += sectionCount;
         });
-        emptySearch.classList.toggle('visible', normalized.length > 0 && visibleTotal === 0);
-        countLabel.textContent = normalized ? visibleTotal + (visibleTotal === 1 ? ' match' : ' matches') : countLabel.dataset.original || countLabel.textContent;
+
+        const searching = normalized.length > 0;
+        searchResultsBar.hidden = !searching;
+        searchResultsTitle.textContent = searching ? 'Results for “' + query.trim() + '”' : '';
+        searchResultsCount.textContent = searching
+          ? visibleTotal + (visibleTotal === 1 ? ' result' : ' results')
+          : '';
+        emptySearch.classList.toggle('visible', searching && visibleTotal === 0);
+        countLabel.textContent = searching
+          ? visibleTotal + (visibleTotal === 1 ? ' match' : ' matches')
+          : countLabel.dataset.original || countLabel.textContent;
         nav.querySelectorAll('.category-chip').forEach(chip => {
           const target = document.querySelector(chip.getAttribute('href'));
-          chip.hidden = !!normalized && (!target || target.hidden);
+          chip.hidden = searching && (!target || target.hidden);
         });
+        renderPinned();
       }
 
       async function loadCatalogue() {
