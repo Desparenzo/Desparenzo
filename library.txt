@@ -1,0 +1,68 @@
+# DESPARENZO LIBRARY CATALOGUE
+# ------------------------------------------------------------
+# HOW TO ADD ITEMS
+# 1. Category headings go inside square brackets, for example [Games].
+# 2. Add one item per line under its category.
+# 3. Keep the fields in this order, separated by | characters:
+#    Serial. App name | Full website link | Icon filename
+# 4. Put icon images inside the icons folder. In this file, enter
+#    only the filename, such as carrom.png (not the folder name).
+# 5. You can add as many categories and items as you like.
+# 6. Lines starting with # are comments and are ignored.
+# 7. If you do not have an icon yet, leave the last field empty.
+# ------------------------------------------------------------
+
+[Games]
+1. Carrom | https://desparenzo.github.io/Carrom/ | carrom.png
+2. Flappy Bird | https://desparenzo.github.io/Flappy-Bird/ | flappy-bird.png
+3. Tetris | https://desparenzo.github.io/Tetris/ | tetris.png
+4. Tic Tac Toe | https://desparenzo.github.io/Tic-Tac-Toe/ | tic-tac-toe.png
+5. Snakes & Ladders | https://desparenzo.github.io/Snakes-Ladders/ | snakes-ladders.png
+6. Classic Snake | https://desparenzo.github.io/Classic-Snake/ | classic-snake.png
+7. Pocket Bowling | https://desparenzo.github.io/Bowling/ | pocket-bowling.png
+8. Demolition Derby | https://desparenzo.github.io/Demolition-Derby/ | demolition-derby.png
+9. Fly In a Box | https://desparenzo.github.io/Fly-In-a-Box/ | fly-in-a-box.png
+10. Precision Dots | https://desparenzo.github.io/Precision-Dots/ | precision-dots.png
+11. Dots & Boxes | https://desparenzo.github.io/Dots-Boxes/ | dots-boxes.png
+12. Helicopter Rescue | https://desparenzo.github.io/Helicopter-Rescue/ | helicopter-rescue.png
+13. Neon Lander | https://desparenzo.github.io/Neon-Lander/ | neon-lander.png
+14. Minesweeper | https://desparenzo.github.io/Minesweeper/ | minesweeper.png
+15. Photo Jigsaw | https://desparenzo.github.io/Photo-Jigsaw/ | photo-jigsaw.png
+16. Tilt Ball | https://desparenzo.github.io/Tilt-Ball/ | tilt-ball.png
+
+[Apps]
+1. PeerChat | https://desparenzo.github.io/PeerChat/ | peerchat.png
+2. Text to Html | https://desparenzo.github.io/Text-to-Html/ | text-to-html.png
+3. Image Converter | https://desparenzo.github.io/Universal-Image-Converter/ | image-converter.png
+4. Photo Setup Maker | https://desparenzo.github.io/Photo-Setup-Maker/ | photo-setup-maker.png
+5. Peer Files | https://desparenzo.github.io/Peerfiles/ | peer-files.png
+6. Barcode Generator | https://desparenzo.github.io/Barcode-Generator/ | barcode-generator.png
+7. Trilingual Keyboard | https://desparenzo.github.io/Phonetic-Trilingual-Keyboard/ | trilingual-keyboard.png
+8. LanSpeaker | https://desparenzo.github.io/LanSpeaker/ | lanspeaker.png
+9. LanCast | https://desparenzo.github.io/LanCast/ | lancast.png
+10. Drum Set | https://desparenzo.github.io/Drum-Set/ | drum-set.png
+11. Music Synthesizer | https://desparenzo.github.io/Music-Synthesizer/ | music-synthesizer.png
+12. Simple Piano | https://desparenzo.github.io/Simple-Piano/ | simple-piano.png
+13. QR Code Generator | https://desparenzo.github.io/QR-Code-Generator/ | qr-code-generator.png
+14. The Solar System | https://desparenzo.github.io/The-Solar-System/ | solar-system.png
+15. SpendSync Calculator | https://desparenzo.github.io/SpendSync-Calculator/ | spendsync.png
+16. CESC Bill Calculator | https://desparenzo.github.io/CESC-Bill-Calculator/ | cesc-bill-calculator.png
+17. Halftone Dotmaker | https://desparenzo.github.io/Halftone-Dotmaker/ | halftone-dotmaker.png
+18. LifeSpan | https://desparenzo.github.io/LifeSpan/ | lifespan.png
+19. Trace & Sketch | https://desparenzo.github.io/Trace-Draw/ | trace-sketch.png
+20. Code Tester | https://desparenzo.github.io/CodeTester/ | code-tester.png
+21. Compass & Weather | https://desparenzo.github.io/Compass-Weather/ | compass-weather.png
+22. Noise Meter | https://desparenzo.github.io/Noise-Meter/ | noise-meter.png
+23. Wheel Of Choice | https://desparenzo.github.io/Wheel-Of-Choice/ | wheel-of-choice.png
+24. IMDB Movies | https://desparenzo.github.io/IMDB-Movies/ | imdb-movies.png
+25. Home Gym | https://desparenzo.github.io/Home-Gym/ | home-gym.png
+26. Media Size Processor | https://desparenzo.github.io/Media-Size-Processor/ | media-size-processor.png
+27. 512x512 Pixel | https://desparenzo.github.io/512x512-pixel/ | 512x512-pixel.png
+28. SBS Image Viewer | https://desparenzo.github.io/SBS-Image-Viewer/ | sbs-image-viewer.png
+29. Purchase Decider | https://desparenzo.github.io/Purchase-Decider/ | purchase-decider.png
+30. Document Cam | https://desparenzo.github.io/Document-Cam/ | document-cam.png
+31. Touch DJ Mixer | https://desparenzo.github.io/Touch-DJ-Mixer/ | touch-dj-mixer.png
+
+[Utilities]
+# Add utility tools here using the same format:
+# 1. My Utility | https://example.github.io/My-Utility/ | my-utility.png
