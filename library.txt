@@ -57,11 +57,13 @@
 24. IMDB Movies | https://desparenzo.github.io/IMDB-Movies/ | imdb-movies.png
 25. Home Gym | https://desparenzo.github.io/Home-Gym/ | home-gym.png
 26. Media Size Processor | https://desparenzo.github.io/Media-Size-Processor/ | media-size-processor.png
-27. 512x512 Pixel | https://desparenzo.github.io/512x512-pixel/ | 512x512-pixel.png
+27. 300x300 Pixel | https://desparenzo.github.io/300x300-Pixel/ | 300x300-pixel.png
 28. SBS Image Viewer | https://desparenzo.github.io/SBS-Image-Viewer/ | sbs-image-viewer.png
 29. Purchase Decider | https://desparenzo.github.io/Purchase-Decider/ | purchase-decider.png
 30. Document Cam | https://desparenzo.github.io/Document-Cam/ | document-cam.png
 31. Touch DJ Mixer | https://desparenzo.github.io/Touch-DJ-Mixer/ | touch-dj-mixer.png
+32. Screenshot Transmitter | https://desparenzo.github.io/Screenshot-Transmiter/ | Screenshot-Transmitter.png
+33. Music Player | https://desparenzo.github.io/The-Better-Music-Player/ | Music-Player.png
 
 [Utilities]
 # Add utility tools here using the same format:
