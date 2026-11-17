@@ -64,7 +64,7 @@
 31. Touch DJ Mixer | https://desparenzo.github.io/Touch-DJ-Mixer/ | touch-dj-mixer.png
 32. Screenshot Transmitter | https://desparenzo.github.io/Screenshot-Transmiter/ | Screenshot-Transmitter.png
 33. Music Player | https://desparenzo.github.io/The-Better-Music-Player/ | Music-Player.png
-34. 8D Audio Player | X | 8D-Audio.png
+34. 8D Audio Player | https://desparenzo.github.io/8D-Audio-Player/ | 8D-Audio.png
 
 [Utilities]
 # Add utility tools here using the same format:
