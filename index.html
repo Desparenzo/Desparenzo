@@ -212,6 +212,28 @@
       background: var(--accent-soft);
     }
 
+    .download-app-link {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--accent);
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .download-app-link:hover {
+      border-color: transparent;
+      background: var(--accent-soft);
+    }
+
     main {
       width: min(1160px, 100%);
       margin: 0 auto;
@@ -764,6 +786,13 @@
           });
           nav.appendChild(chip);
         });
+
+        const downloadLink = document.createElement('a');
+        downloadLink.className = 'download-app-link';
+        downloadLink.href = './icons/Desparenzo.apk';
+        downloadLink.download = 'Desparenzo.apk';
+        downloadLink.textContent = 'Download the app';
+        nav.appendChild(downloadLink);
 
         countLabel.dataset.original = total + (total === 1 ? ' item' : ' items');
         countLabel.textContent = countLabel.dataset.original;
