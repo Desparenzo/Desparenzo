@@ -66,6 +66,5 @@
 33. Music Player | https://desparenzo.github.io/The-Better-Music-Player/ | Music-Player.png
 34. 8D Audio Player | https://desparenzo.github.io/8D-Audio-Player/ | 8D-Audio.png
 
-[Utilities]
-# Add utility tools here using the same format:
-# 1. My Utility | https://example.github.io/My-Utility/ | my-utility.png
+[TV]
+1. Test Code | https://desparenzo.github.io/CodeTester/ | my-utility.png
