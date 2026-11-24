@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -398,36 +399,32 @@
       object-fit: cover;
       border-radius: inherit;
     }
-    .pin-toggle {
+
+    /* Pin / Unpin appears only after a long press. */
+    .pin-menu {
       position: absolute;
-      z-index: 3;
-      top: 5px;
-      right: 5px;
-      width: 26px;
-      height: 26px;
-      display: grid;
-      place-items: center;
-      padding: 0;
+      z-index: 5;
+      top: 1px;
+      right: 1px;
+      min-height: 31px;
+      padding: 0 11px;
       border: 1px solid var(--line);
-      border-radius: 50%;
-      color: var(--muted);
+      border-radius: 999px;
+      color: var(--ink);
       background: var(--surface-strong);
-      box-shadow: 0 3px 9px rgba(20,24,50,.13);
-      font-size: 17px;
-      line-height: 1;
+      box-shadow: 0 5px 16px rgba(20,24,50,.17);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
       cursor: pointer;
-      transition: color .16s ease, background .16s ease, transform .16s ease;
     }
-    .pin-toggle:hover { transform: scale(1.08); }
-    .pin-toggle[aria-pressed="true"] {
-      color: #fff;
-      border-color: transparent;
-      background: var(--accent);
-    }
-    .pin-toggle:focus-visible {
+    .pin-menu[hidden] { display: none; }
+    .pin-menu:not([hidden]) { display: inline-flex; align-items: center; justify-content: center; }
+    .pin-menu:focus-visible {
       outline: 3px solid var(--focus);
-      outline-offset: 2px;
+      outline-offset: 3px;
     }
+
     .app-name {
       width: 100%;
       min-height: 30px;
@@ -492,6 +489,28 @@
       .app-icon { width: min(17vw, 64px); height: min(17vw, 64px); border-radius: 19px; font-size: 19px; }
       .app-name { font-size: 10.5px; }
       .section-heading { margin-left: 5px; margin-right: 5px; }
+    }
+
+    /* Clear focus feedback for TV remotes and keyboards. */
+    .app-tile:focus,
+    .category-chip:focus,
+    .icon-action:focus,
+    .download-app-link:focus,
+    #search-input:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .category-chip:focus,
+    .icon-action:focus,
+    .download-app-link:focus {
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    .app-tile:focus {
+      background: var(--surface);
+      border-color: var(--focus);
+      transform: translateY(-3px);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -564,6 +583,10 @@
       'use strict';
 
       const CATALOGUE_FILE = './library.txt';
+      const MAIN_APK_FILE = './icons/Desparenzo.apk';
+      const TV_APK_FILE = './icons/Desparenzo_Tv.apk';
+      const HOLD_DURATION = 650;
+
       const content = document.getElementById('library-content');
       const nav = document.getElementById('category-nav');
       const countLabel = document.getElementById('library-count');
@@ -579,14 +602,21 @@
       const pinnedCount = document.getElementById('pinned-count');
       const themeToggle = document.getElementById('theme-toggle');
       const themeIcon = document.getElementById('theme-icon');
+
       const PIN_STORAGE_KEY = 'desparenzo-pinned-apps-v1';
+
       let libraryCategories = [];
       let activeSearch = '';
       let pinnedUrls = loadPinnedUrls();
+      let downloadLink = null;
+      let activeCategoryIndex = 0;
+      let okHoldState = null;
 
       const categoryGlyphs = {
-        games: '🎮', game: '🎮', apps: '▦', app: '▦', utilities: '🛠', utility: '🛠', tools: '🧰', tools: '🧰'
+        games: '🎮', game: '🎮', apps: '▦', app: '▦',
+        utilities: '🛠', utility: '🛠', tools: '🧰'
       };
+
       const palettes = [
         ['#7867f4', '#4d8de8'], ['#f06e8b', '#cb5dd5'], ['#24a99a', '#3d83c9'],
         ['#ef9a45', '#e45e73'], ['#567ee8', '#855ddd'], ['#26a7c7', '#4f75dd'],
@@ -603,13 +633,18 @@
       }
 
       function savePinnedUrls() {
-        try { localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify([...pinnedUrls])); }
-        catch (_) { /* Pins still work for this page session if browser storage is unavailable. */ }
+        try {
+          localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify([...pinnedUrls]));
+        } catch (_) {
+          /* Pins still work for this page session if browser storage is unavailable. */
+        }
       }
 
       function hashText(value) {
         let hash = 0;
-        for (let i = 0; i < value.length; i++) hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;
+        for (let i = 0; i < value.length; i++) {
+          hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;
+        }
         return Math.abs(hash);
       }
 
@@ -656,29 +691,106 @@
 
           current.items.push({ name, url, icon });
         }
+
         return categories.filter(category => category.items.length > 0);
       }
 
-      function updatePinButton(button, isPinned) {
-        button.textContent = isPinned ? '★' : '☆';
+      /* ---------- Download button: normal APK or TV APK ---------- */
+
+      function isTvCategory(categoryName) {
+        return /\btv\b/i.test(categoryName || '');
+      }
+
+      function updateDownloadButton(categoryName) {
+        if (!downloadLink) return;
+
+        const tvCategory = isTvCategory(categoryName);
+
+        downloadLink.href = tvCategory ? TV_APK_FILE : MAIN_APK_FILE;
+        downloadLink.download = tvCategory ? 'Desparenzo_Tv.apk' : 'Desparenzo.apk';
+        downloadLink.textContent = tvCategory ? 'Download TV App' : 'Download the app';
+      }
+
+      function setActiveCategory(index) {
+        if (!libraryCategories.length) return;
+
+        activeCategoryIndex = Math.max(0, Math.min(index, libraryCategories.length - 1));
+
+        nav.querySelectorAll('.category-chip').forEach((chip, chipIndex) => {
+          chip.classList.toggle('active', chipIndex === activeCategoryIndex);
+        });
+
+        updateDownloadButton(libraryCategories[activeCategoryIndex].name);
+      }
+
+      /* ---------- Pin / Unpin menu ---------- */
+
+      function updatePinMenu(button, item) {
+        const isPinned = pinnedUrls.has(item.url);
+        button.textContent = isPinned ? '★ Unpin' : '☆ Pin';
+        button.setAttribute('aria-label', isPinned ? 'Unpin ' + item.name : 'Pin ' + item.name);
         button.setAttribute('aria-pressed', String(isPinned));
-        button.setAttribute('aria-label', isPinned ? 'Unpin this app' : 'Pin this app');
-        button.title = isPinned ? 'Unpin' : 'Pin';
+        button.title = isPinned ? 'Unpin this app' : 'Pin this app';
+      }
+
+      function closePinMenu(wrapper, restoreFocus = false) {
+        if (!wrapper) return;
+
+        const button = wrapper.querySelector('.pin-menu');
+        if (button) button.hidden = true;
+
+        wrapper.classList.remove('pin-menu-open');
+
+        if (restoreFocus) {
+          const tile = wrapper.querySelector('.app-tile');
+          if (tile) tile.focus({ preventScroll: true });
+        }
+      }
+
+      function closeAllPinMenus(restoreFocus = false) {
+        const openMenus = [...document.querySelectorAll('.pin-menu:not([hidden])')];
+        const wrappers = openMenus.map(button => button.closest('.app-tile-wrap')).filter(Boolean);
+
+        wrappers.forEach(wrapper => closePinMenu(wrapper, false));
+
+        if (restoreFocus && wrappers.length) {
+          const tile = wrappers[0].querySelector('.app-tile');
+          if (tile) tile.focus({ preventScroll: true });
+        }
+      }
+
+      function showPinMenu(wrapper, item) {
+        if (!wrapper) return;
+
+        closeAllPinMenus(false);
+
+        const button = wrapper.querySelector('.pin-menu');
+        if (!button) return;
+
+        updatePinMenu(button, item);
+        button.hidden = false;
+        wrapper.classList.add('pin-menu-open');
+        button.focus({ preventScroll: true });
       }
 
       function togglePin(item) {
         if (pinnedUrls.has(item.url)) pinnedUrls.delete(item.url);
         else pinnedUrls.add(item.url);
+
         savePinnedUrls();
         renderPinned();
-        content.querySelectorAll('.pin-toggle').forEach(button => {
-          if (button.dataset.url === item.url) updatePinButton(button, pinnedUrls.has(item.url));
+
+        document.querySelectorAll('.pin-menu').forEach(button => {
+          if (button.dataset.url === item.url) updatePinMenu(button, item);
         });
       }
+
+      /* ---------- Tile creation ---------- */
 
       function makeTile(item, category) {
         const wrapper = document.createElement('div');
         wrapper.className = 'app-tile-wrap';
+        wrapper._desparenzoItem = item;
 
         const link = document.createElement('a');
         link.className = 'app-tile';
@@ -689,11 +801,13 @@
 
         const icon = document.createElement('span');
         icon.className = 'app-icon';
+
         const palette = palettes[hashText(item.name + category.name) % palettes.length];
         icon.style.setProperty('--icon-a', palette[0]);
         icon.style.setProperty('--icon-b', palette[1]);
 
         const iconUrl = iconPath(item.icon);
+
         if (iconUrl) {
           const image = document.createElement('img');
           image.src = iconUrl;
@@ -714,23 +828,71 @@
         label.textContent = item.name;
         link.append(icon, label);
 
-        const pinButton = document.createElement('button');
-        pinButton.type = 'button';
-        pinButton.className = 'pin-toggle';
-        pinButton.dataset.url = item.url;
-        updatePinButton(pinButton, pinnedUrls.has(item.url));
-        pinButton.addEventListener('click', event => {
+        const pinMenu = document.createElement('button');
+        pinMenu.type = 'button';
+        pinMenu.className = 'pin-menu';
+        pinMenu.hidden = true;
+        pinMenu.dataset.url = item.url;
+        updatePinMenu(pinMenu, item);
+
+        pinMenu.addEventListener('click', event => {
           event.preventDefault();
           event.stopPropagation();
+
+          closePinMenu(wrapper, false);
           togglePin(item);
+
+          const originalTile = [...content.querySelectorAll('.app-tile')].find(tile => tile.href === link.href);
+          if (originalTile) originalTile.focus({ preventScroll: true });
         });
 
-        wrapper.append(link, pinButton);
+        /* Mouse and touchscreen long press. */
+        let pointerHoldTimer = null;
+
+        function clearPointerHold() {
+          if (pointerHoldTimer !== null) {
+            window.clearTimeout(pointerHoldTimer);
+            pointerHoldTimer = null;
+          }
+        }
+
+        link.addEventListener('pointerdown', event => {
+          if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+          clearPointerHold();
+
+          pointerHoldTimer = window.setTimeout(() => {
+            wrapper._suppressTileClickUntil = Date.now() + 1800;
+            showPinMenu(wrapper, item);
+          }, HOLD_DURATION);
+        });
+
+        link.addEventListener('pointerup', clearPointerHold);
+        link.addEventListener('pointercancel', clearPointerHold);
+        link.addEventListener('pointerleave', clearPointerHold);
+
+        link.addEventListener('contextmenu', event => {
+          event.preventDefault();
+          wrapper._suppressTileClickUntil = Date.now() + 1800;
+          showPinMenu(wrapper, item);
+        });
+
+        /* Stop the normal tile-opening click after a long press. */
+        link.addEventListener('click', event => {
+          if (Date.now() < (wrapper._suppressTileClickUntil || 0)) {
+            event.preventDefault();
+            event.stopPropagation();
+            wrapper._suppressTileClickUntil = 0;
+          }
+        });
+
+        wrapper.append(link, pinMenu);
         return wrapper;
       }
 
       function renderPinned() {
         const allItems = new Map();
+
         libraryCategories.forEach(category => {
           category.items.forEach(item => allItems.set(item.url, { item, category }));
         });
@@ -740,19 +902,26 @@
           .filter(Boolean);
 
         pinnedGrid.replaceChildren();
-        pinnedItems.forEach(({ item, category }) => pinnedGrid.appendChild(makeTile(item, category)));
+        pinnedItems.forEach(({ item, category }) => {
+          pinnedGrid.appendChild(makeTile(item, category));
+        });
+
         pinnedCount.textContent = String(pinnedItems.length);
         pinnedSection.hidden = activeSearch.length > 0 || pinnedItems.length === 0;
       }
+
+      /* ---------- Library rendering ---------- */
 
       function render(categories) {
         libraryCategories = categories;
         content.replaceChildren();
         nav.replaceChildren();
+
         let total = 0;
 
         categories.forEach((category, categoryIndex) => {
           total += category.items.length;
+
           const id = 'category-' + categoryIndex;
           const section = document.createElement('section');
           section.className = 'library-section';
@@ -761,18 +930,26 @@
 
           const heading = document.createElement('div');
           heading.className = 'section-heading';
+
           const title = document.createElement('h2');
           title.textContent = category.name;
+
           const badge = document.createElement('span');
           badge.className = 'section-count';
           badge.textContent = category.items.length;
+
           const rule = document.createElement('span');
           rule.className = 'section-rule';
+
           heading.append(title, badge, rule);
 
           const grid = document.createElement('div');
           grid.className = 'app-grid';
-          category.items.forEach(item => grid.appendChild(makeTile(item, category)));
+
+          category.items.forEach(item => {
+            grid.appendChild(makeTile(item, category));
+          });
+
           section.append(heading, grid);
           content.appendChild(section);
 
@@ -780,25 +957,30 @@
           chip.className = 'category-chip' + (categoryIndex === 0 ? ' active' : '');
           chip.href = '#' + id;
           chip.textContent = category.name;
+
           chip.addEventListener('click', () => {
-            nav.querySelectorAll('.category-chip').forEach(el => el.classList.remove('active'));
-            chip.classList.add('active');
+            setActiveCategory(categoryIndex);
           });
+
           nav.appendChild(chip);
         });
 
-        const downloadLink = document.createElement('a');
+        downloadLink = document.createElement('a');
         downloadLink.className = 'download-app-link';
-        downloadLink.href = './icons/Desparenzo.apk';
+        downloadLink.href = MAIN_APK_FILE;
         downloadLink.download = 'Desparenzo.apk';
         downloadLink.textContent = 'Download the app';
         nav.appendChild(downloadLink);
 
+        if (categories.length) setActiveCategory(0);
+
         countLabel.dataset.original = total + (total === 1 ? ' item' : ' items');
         countLabel.textContent = countLabel.dataset.original;
+
         if (!total) {
           content.innerHTML = '<div class="status"><strong>Your library is empty</strong>Add your first item to <code>library.txt</code> and refresh this page.</div>';
         }
+
         renderPinned();
         filterItems(searchInput.value);
       }
@@ -806,85 +988,488 @@
       function filterItems(query) {
         const normalized = query.trim().toLowerCase();
         activeSearch = normalized;
+
         let visibleTotal = 0;
+
         content.querySelectorAll('.library-section').forEach(section => {
           let sectionCount = 0;
+
           section.querySelectorAll('.app-tile-wrap').forEach(tile => {
             const name = tile.querySelector('.app-name').textContent.toLowerCase();
             const matches = name.includes(normalized);
+
             tile.hidden = !matches;
             if (matches) sectionCount++;
           });
+
           section.hidden = sectionCount === 0;
           visibleTotal += sectionCount;
         });
 
         const searching = normalized.length > 0;
+
         searchResultsBar.hidden = !searching;
         searchResultsTitle.textContent = searching ? 'Results for “' + query.trim() + '”' : '';
         searchResultsCount.textContent = searching
           ? visibleTotal + (visibleTotal === 1 ? ' result' : ' results')
           : '';
+
         emptySearch.classList.toggle('visible', searching && visibleTotal === 0);
+
         countLabel.textContent = searching
           ? visibleTotal + (visibleTotal === 1 ? ' match' : ' matches')
           : countLabel.dataset.original || countLabel.textContent;
+
         nav.querySelectorAll('.category-chip').forEach(chip => {
           const target = document.querySelector(chip.getAttribute('href'));
           chip.hidden = searching && (!target || target.hidden);
         });
+
         renderPinned();
       }
 
       async function loadCatalogue() {
         try {
           const response = await fetch(CATALOGUE_FILE, { cache: 'no-store' });
-          if (!response.ok) throw new Error('Could not load library.txt (HTTP ' + response.status + ').');
+
+          if (!response.ok) {
+            throw new Error('Could not load library.txt (HTTP ' + response.status + ').');
+          }
+
           const raw = await response.text();
           const categories = parseCatalogue(raw);
+
           render(categories);
           countLabel.dataset.original = countLabel.textContent;
         } catch (error) {
           content.innerHTML = '<div class="status"><strong>Could not load the library catalogue</strong>' +
             'Make sure <code>library.txt</code> is uploaded beside <code>index.html</code> in your GitHub Pages repository.<br><br>' +
             '<span style="font-size:11px">' + String(error.message || error).replace(/[<>&]/g, '') + '</span></div>';
+
           countLabel.textContent = 'Catalogue unavailable';
         }
       }
 
+      /* ---------- Search and theme ---------- */
+
       searchToggle.addEventListener('click', () => {
         const open = !searchRow.classList.contains('open');
+
         searchRow.classList.toggle('open', open);
         searchToggle.setAttribute('aria-expanded', String(open));
-        if (open) searchInput.focus();
-        else {
+
+        if (open) {
+          searchInput.focus();
+        } else {
           searchInput.value = '';
           filterItems('');
         }
       });
+
       searchInput.addEventListener('input', () => filterItems(searchInput.value));
+
       document.addEventListener('keydown', event => {
         if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
           event.preventDefault();
+
           if (!searchRow.classList.contains('open')) searchToggle.click();
           else searchInput.focus();
         }
-        if (event.key === 'Escape' && searchRow.classList.contains('open')) searchToggle.click();
+
+        if (event.key === 'Escape' && searchRow.classList.contains('open')) {
+          searchToggle.click();
+        }
       });
 
       function setTheme(theme) {
         document.documentElement.dataset.theme = theme;
+
         const dark = theme === 'dark';
+
         themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+
         themeIcon.innerHTML = dark
           ? '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>'
           : '<path d="M20.5 15.3A8.5 8.5 0 0 1 8.7 3.5 8.6 8.6 0 1 0 20.5 15.3Z"></path>';
-        try { localStorage.setItem('desparenzo-theme', theme); } catch (_) {}
+
+        try {
+          localStorage.setItem('desparenzo-theme', theme);
+        } catch (_) {}
       }
+
       let savedTheme = 'light';
-      try { savedTheme = localStorage.getItem('desparenzo-theme') || 'light'; } catch (_) {}
+
+      try {
+        savedTheme = localStorage.getItem('desparenzo-theme') || 'light';
+      } catch (_) {}
+
       setTheme(savedTheme === 'dark' ? 'dark' : 'light');
-      themeToggle.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+
+      themeToggle.addEventListener('click', () => {
+        setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+      });
+
+      /* ---------- TV remote / keyboard navigation ---------- */
+
+      function isElementVisible(element) {
+        if (!element || element.closest('[hidden]')) return false;
+        if (!element.getClientRects().length) return false;
+        return getComputedStyle(element).visibility !== 'hidden';
+      }
+
+      function getFocusableElements() {
+        const selector = [
+          '.app-tile',
+          '.category-chip',
+          '.icon-action',
+          '.download-app-link',
+          '#search-input',
+          '.pin-menu'
+        ].join(',');
+
+        return [...document.querySelectorAll(selector)].filter(element => {
+          if (element.disabled) return false;
+          return isElementVisible(element);
+        });
+      }
+
+      function focusElement(element) {
+        if (!element || !isElementVisible(element)) return;
+
+        element.focus({ preventScroll: true });
+
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
+        });
+      }
+
+      function moveSpatialFocus(direction) {
+        const elements = getFocusableElements();
+
+        if (!elements.length) return;
+
+        const current = document.activeElement;
+
+        if (!elements.includes(current)) {
+          focusElement(elements[0]);
+          return;
+        }
+
+        const currentRect = current.getBoundingClientRect();
+        const currentX = currentRect.left + currentRect.width / 2;
+        const currentY = currentRect.top + currentRect.height / 2;
+
+        let bestElement = null;
+        let bestScore = Infinity;
+
+        elements.forEach(candidate => {
+          if (candidate === current) return;
+
+          const rect = candidate.getBoundingClientRect();
+          const candidateX = rect.left + rect.width / 2;
+          const candidateY = rect.top + rect.height / 2;
+
+          const dx = candidateX - currentX;
+          const dy = candidateY - currentY;
+
+          let primary;
+          let secondary;
+
+          if (direction === 'right') {
+            if (dx <= 2) return;
+            primary = dx;
+            secondary = Math.abs(dy);
+          } else if (direction === 'left') {
+            if (dx >= -2) return;
+            primary = -dx;
+            secondary = Math.abs(dy);
+          } else if (direction === 'down') {
+            if (dy <= 2) return;
+            primary = dy;
+            secondary = Math.abs(dx);
+          } else {
+            if (dy >= -2) return;
+            primary = -dy;
+            secondary = Math.abs(dx);
+          }
+
+          const score = primary + secondary * 1.8 + secondary * secondary * 0.006;
+
+          if (score < bestScore) {
+            bestScore = score;
+            bestElement = candidate;
+          }
+        });
+
+        /* Horizontal fallback keeps navigation moving at row edges. */
+        if (!bestElement && (direction === 'left' || direction === 'right')) {
+          const grid = current.closest('.app-grid');
+
+          if (grid && current.classList.contains('app-tile')) {
+            const rowTiles = [...grid.querySelectorAll('.app-tile')]
+              .filter(isElementVisible);
+
+            const index = rowTiles.indexOf(current);
+
+            if (index !== -1) {
+              const nextIndex = direction === 'right'
+                ? (index + 1) % rowTiles.length
+                : (index - 1 + rowTiles.length) % rowTiles.length;
+
+              bestElement = rowTiles[nextIndex];
+            }
+          }
+        }
+
+        /* Final fallback: continue through the focusable elements. */
+        if (!bestElement) {
+          const index = elements.indexOf(current);
+          const step = direction === 'right' || direction === 'down' ? 1 : -1;
+          const nextIndex = (index + step + elements.length) % elements.length;
+          bestElement = elements[nextIndex];
+        }
+
+        focusElement(bestElement);
+      }
+
+      function getVisibleLibraryTiles() {
+        return [...content.querySelectorAll('.app-tile')].filter(isElementVisible);
+      }
+
+      function moveTileFocus(step) {
+        const tiles = getVisibleLibraryTiles();
+
+        if (!tiles.length) return;
+
+        const currentIndex = tiles.indexOf(document.activeElement);
+
+        if (currentIndex === -1) {
+          focusElement(step > 0 ? tiles[0] : tiles[tiles.length - 1]);
+          return;
+        }
+
+        const nextIndex = (currentIndex + step + tiles.length) % tiles.length;
+        focusElement(tiles[nextIndex]);
+      }
+
+      function activateFocusedElement() {
+        const active = document.activeElement;
+
+        if (active && active !== document.body && typeof active.click === 'function') {
+          active.click();
+          return;
+        }
+
+        const firstTile = getVisibleLibraryTiles()[0];
+        if (firstTile) firstTile.click();
+      }
+
+      function isOkKey(event) {
+        return (
+          ['Enter', ' ', 'NumpadEnter', 'Select', 'Accept'].includes(event.key) ||
+          [13, 23, 66].includes(event.keyCode)
+        );
+      }
+
+      function isBackKey(event) {
+        const isTextField = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+        if (isTextField && event.key === 'Backspace') return false;
+
+        return (
+          ['Escape', 'Backspace', 'BrowserBack', 'GoBack'].includes(event.key) ||
+          event.keyCode === 4
+        );
+      }
+
+      function handleBackAction() {
+        const openMenu = document.querySelector('.pin-menu:not([hidden])');
+
+        if (openMenu) {
+          const wrapper = openMenu.closest('.app-tile-wrap');
+          closePinMenu(wrapper, true);
+          return;
+        }
+
+        if (searchRow.classList.contains('open')) {
+          searchToggle.click();
+          focusElement(searchToggle);
+          return;
+        }
+
+        if (activeCategoryIndex !== 0 && libraryCategories.length) {
+          setActiveCategory(0);
+
+          const firstSection = document.getElementById('category-0');
+          if (firstSection) {
+            firstSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+
+          const firstChip = nav.querySelector('.category-chip');
+          if (firstChip) focusElement(firstChip);
+          return;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const firstChip = nav.querySelector('.category-chip');
+        focusElement(firstChip || searchToggle);
+      }
+
+      function handleMediaKey(event) {
+        const key = event.key;
+        const code = event.keyCode;
+
+        const isNext =
+          ['MediaTrackNext', 'MediaNextTrack'].includes(key) ||
+          [176, 87].includes(code);
+
+        const isPrevious =
+          ['MediaTrackPrevious', 'MediaPreviousTrack'].includes(key) ||
+          [177, 88].includes(code);
+
+        const isPlayPause =
+          ['MediaPlayPause', 'MediaPlay', 'MediaPause'].includes(key) ||
+          [179, 85].includes(code);
+
+        if (isNext) {
+          event.preventDefault();
+          moveTileFocus(1);
+          return true;
+        }
+
+        if (isPrevious) {
+          event.preventDefault();
+          moveTileFocus(-1);
+          return true;
+        }
+
+        if (isPlayPause) {
+          event.preventDefault();
+          activateFocusedElement();
+          return true;
+        }
+
+        return false;
+      }
+
+      document.addEventListener('keydown', event => {
+        const key = event.key;
+        const code = event.keyCode;
+
+        /* D-pad: standard browser keys and Android DPAD key codes. */
+        const directions = {
+          ArrowUp: 'up',
+          ArrowDown: 'down',
+          ArrowLeft: 'left',
+          ArrowRight: 'right'
+        };
+
+        if (code === 19) directions[key] = 'up';
+        if (code === 20) directions[key] = 'down';
+        if (code === 21) directions[key] = 'left';
+        if (code === 22) directions[key] = 'right';
+
+        let direction = directions[key];
+
+        if (!direction) {
+          if (code === 19) direction = 'up';
+          else if (code === 20) direction = 'down';
+          else if (code === 21) direction = 'left';
+          else if (code === 22) direction = 'right';
+        }
+
+        if (direction) {
+          if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+          event.preventDefault();
+          moveSpatialFocus(direction);
+          return;
+        }
+
+        if (isBackKey(event)) {
+          event.preventDefault();
+          handleBackAction();
+          return;
+        }
+
+        if (handleMediaKey(event)) return;
+
+        /* Long-press OK on a focused app tile opens Pin / Unpin. */
+        if (isOkKey(event)) {
+          const tile = document.activeElement.closest
+            ? document.activeElement.closest('.app-tile')
+            : null;
+
+          if (!tile) return;
+
+          event.preventDefault();
+
+          if (event.repeat || okHoldState) return;
+
+          const wrapper = tile.closest('.app-tile-wrap');
+          const item = wrapper ? wrapper._desparenzoItem : null;
+
+          if (!wrapper || !item) return;
+
+          const state = {
+            tile,
+            wrapper,
+            item,
+            key: event.key,
+            keyCode: event.keyCode,
+            longTriggered: false,
+            timer: null
+          };
+
+          state.timer = window.setTimeout(() => {
+            state.longTriggered = true;
+            wrapper._suppressTileClickUntil = Date.now() + 1800;
+            showPinMenu(wrapper, item);
+          }, HOLD_DURATION);
+
+          okHoldState = state;
+        }
+      });
+
+      document.addEventListener('keyup', event => {
+        if (!okHoldState) return;
+
+        const state = okHoldState;
+
+        const sameKey =
+          event.key === state.key ||
+          event.keyCode === state.keyCode ||
+          event.keyCode === 0;
+
+        if (!sameKey) return;
+
+        window.clearTimeout(state.timer);
+        okHoldState = null;
+
+        if (!state.longTriggered) {
+          state.tile.click();
+        }
+      });
+
+      window.addEventListener('blur', () => {
+        if (okHoldState) {
+          window.clearTimeout(okHoldState.timer);
+          okHoldState = null;
+        }
+      });
+
+      /* Close an open Pin / Unpin menu when clicking somewhere else. */
+      document.addEventListener('pointerdown', event => {
+        if (
+          !event.target.closest('.pin-menu') &&
+          !event.target.closest('.app-tile-wrap.pin-menu-open')
+        ) {
+          closeAllPinMenus(false);
+        }
+      });
 
       loadCatalogue();
     })();
